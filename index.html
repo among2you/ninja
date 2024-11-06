@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ninja Star Marketplace</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #b30000;
+            color: #fff;
+            padding: 1em;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: #e60000;
+            padding: 1em;
+        }
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 1em;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1em;
+            margin-top: 1em;
+        }
+        .product {
+            background-color: #fff;
+            padding: 1em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .product img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+        .product h3 {
+            color: #b30000;
+        }
+        .button {
+            background-color: #b30000;
+            color: #fff;
+            padding: 0.5em 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 0.5em;
+        }
+        .button:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+        .admin-panel, .checkout-form {
+            display: none;
+            background-color: #fff;
+            padding: 2em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 2em;
+        }
+        .admin-panel input, .checkout-form input {
+            display: block;
+            width: 100%;
+            padding: 0.5em;
+            margin-bottom: 1em;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Ninja Star Marketplace</h1>
+</header>
+
+<nav>
+    <a href="#" onclick="showSection('product-catalog')">Products</a>
+    <a href="#" onclick="showSection('checkout')">Checkout</a>
+    <a href="#" onclick="showSection('admin-panel')">Admin Panel</a>
+</nav>
+
+<div class="container">
+    <!-- Product Catalog Section -->
+    <section id="product-catalog">
+        <h2>Available Ninja Stars</h2>
+        <div class="product-grid" id="productGrid">
+            <!-- Products will be populated here by JavaScript -->
+        </div>
+    </section>
+
+    <!-- Checkout Section -->
+    <section id="checkout" class="checkout-form">
+        <h2>Checkout</h2>
+        <form id="checkoutForm">
+            <label for="name">Your Name:</label>
+            <input type="text" id="name" required>
+            
+            <label for="class">Your Class:</label>
+            <input type="text" id="class" required>
+            
+            <button type="button" class="button" onclick="placeOrder()">Place Order</button>
+        </form>
+        <p id="orderStatus"></p>
+    </section>
+
+    <!-- Admin Panel Section -->
+    <section id="admin-panel" class="admin-panel">
+        <h2>Admin Panel</h2>
+        <form id="adminForm">
+            <label for="bladeCount">Blade Count:</label>
+            <input type="number" id="bladeCount" required>
+            
+            <label for="color">Color:</label>
+            <input type="text" id="color" required>
+            
+            <label for="imageUrl">Image URL:</label>
+            <input type="text" id="imageUrl" required>
+            
+            <button type="button" class="button" onclick="addProduct()">Add Ninja Star</button>
+        </form>
+    </section>
+</div>
+
+<script>
+    const products = [];
+
+    // Display Product Catalog
+    function displayProducts() {
+        const productGrid = document.getElementById("productGrid");
+        productGrid.innerHTML = '';
+        products.forEach((product, index) => {
+            productGrid.innerHTML += `
+                <div class="product">
+                    <img src="${product.image}" alt="Ninja Star">
+                    <h3>${product.bladeCount} Blade, ${product.color}</h3>
+                    <button class="button" onclick="addToCart(${index})">Add to Cart</button>
+                </div>
+            `;
+        });
+    }
+
+    // Add Product as Admin
+    function addProduct() {
+        const bladeCount = document.getElementById("bladeCount").value;
+        const color = document.getElementById("color").value;
+        const imageUrl = document.getElementById("imageUrl").value;
+        
+        products.push({ bladeCount, color, image: imageUrl });
+        document.getElementById("adminForm").reset();
+        displayProducts();
+        alert("Ninja star added successfully!");
+    }
+
+    // Cart and Checkout Logic
+    let cart = [];
+    function addToCart(index) {
+        cart.push(products[index]);
+        alert("Added to cart!");
+    }
+
+    function placeOrder() {
+        const name = document.getElementById("name").value;
+        const userClass = document.getElementById("class").value;
+        if (cart.length === 0) {
+            document.getElementById("orderStatus").textContent = "Cart is empty!";
+            return;
+        }
+
+        const order = {
+            name,
+            class: userClass,
+            items: cart,
+            assignedTo: assignOrderToRandomCreator()
+        };
+        
+        cart = []; // Clear cart after order
+        document.getElementById("checkoutForm").reset();
+        document.getElementById("orderStatus").textContent = `Order placed! Assigned to: ${order.assignedTo}`;
+    }
+
+    // Assign order to a random creator
+    function assignOrderToRandomCreator() {
+        const creators = ["Creator A", "Creator B", "Creator C"]; // Example creators
+        return creators[Math.floor(Math.random() * creators.length)];
+    }
+
+    // Section Display Logic
+    function showSection(sectionId) {
+        document.getElementById("product-catalog").style.display = 'none';
+        document.getElementById("checkout").style.display = 'none';
+        document.getElementById("admin-panel").style.display = 'none';
+        document.getElementById(sectionId).style.display = 'block';
+    }
+
+    // Initial Display of Products
+    displayProducts();
+</script>
+
+</body>
+</html>
