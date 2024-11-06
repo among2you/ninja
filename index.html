@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ninja Star Marketplace</title>
     <link rel="stylesheet" href="store-style.css">
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+    <!-- Firebase from CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -14,7 +15,6 @@
 
 <div id="products-container"></div>
 
-<!-- Cart and User Details Section -->
 <div id="cart-container">
     <h2>Your Cart</h2>
     <div id="cart-items"></div>
