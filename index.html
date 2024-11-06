@@ -4,213 +4,141 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ninja Star Marketplace</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: #333;
-            background-color: #f4f4f4;
-        }
-        header {
-            background-color: #b30000;
-            color: #fff;
-            padding: 1em;
-            text-align: center;
-        }
-        nav {
-            display: flex;
-            justify-content: space-around;
-            background-color: #e60000;
-            padding: 1em;
-        }
-        nav a {
-            color: #fff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            padding: 1em;
-        }
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1em;
-            margin-top: 1em;
-        }
-        .product {
-            background-color: #fff;
-            padding: 1em;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            text-align: center;
-        }
-        .product img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 5px;
-        }
-        .product h3 {
-            color: #b30000;
-        }
-        .button {
-            background-color: #b30000;
-            color: #fff;
-            padding: 0.5em 1em;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 0.5em;
-        }
-        .button:disabled {
-            background-color: #ddd;
-            cursor: not-allowed;
-        }
-        .admin-panel, .checkout-form {
-            display: none;
-            background-color: #fff;
-            padding: 2em;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-top: 2em;
-        }
-        .admin-panel input, .checkout-form input {
-            display: block;
-            width: 100%;
-            padding: 0.5em;
-            margin-bottom: 1em;
-        }
-    </style>
+    <link rel="stylesheet" href="store-style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
 </head>
 <body>
 
-<header>
-    <h1>Ninja Star Marketplace</h1>
-</header>
+<h1 style="text-align: center; color: red;">Ninja Star Marketplace</h1>
 
-<nav>
-    <a href="#" onclick="showSection('product-catalog')">Products</a>
-    <a href="#" onclick="showSection('checkout')">Checkout</a>
-    <a href="#" onclick="showSection('admin-panel')">Admin Panel</a>
-</nav>
+<div id="products-container"></div>
 
-<div class="container">
-    <!-- Product Catalog Section -->
-    <section id="product-catalog">
-        <h2>Available Ninja Stars</h2>
-        <div class="product-grid" id="productGrid">
-            <!-- Products will be populated here by JavaScript -->
-        </div>
-    </section>
-
-    <!-- Checkout Section -->
-    <section id="checkout" class="checkout-form">
-        <h2>Checkout</h2>
-        <form id="checkoutForm">
-            <label for="name">Your Name:</label>
-            <input type="text" id="name" required>
-            
-            <label for="class">Your Class:</label>
-            <input type="text" id="class" required>
-            
-            <button type="button" class="button" onclick="placeOrder()">Place Order</button>
-        </form>
-        <p id="orderStatus"></p>
-    </section>
-
-    <!-- Admin Panel Section -->
-    <section id="admin-panel" class="admin-panel">
-        <h2>Admin Panel</h2>
-        <form id="adminForm">
-            <label for="bladeCount">Blade Count:</label>
-            <input type="number" id="bladeCount" required>
-            
-            <label for="color">Color:</label>
-            <input type="text" id="color" required>
-            
-            <label for="imageUrl">Image URL:</label>
-            <input type="text" id="imageUrl" required>
-            
-            <button type="button" class="button" onclick="addProduct()">Add Ninja Star</button>
-        </form>
-    </section>
+<!-- Cart and User Details Section -->
+<div id="cart-container">
+    <h2>Your Cart</h2>
+    <div id="cart-items"></div>
+    <h3>Total: $<span id="total-price">0</span></h3>
+    <input type="text" id="customerName" placeholder="Your Name" required>
+    <input type="text" id="customerClass" placeholder="Your Class" required>
+    <button onclick="placeOrder()">Place Order</button>
 </div>
 
 <script>
-    const products = [];
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyDUODWU7BjsFPqIYCETDvRmM4Mn0xwzyZ8",
+        authDomain: "store-9fe4d.firebaseapp.com",
+        projectId: "store-9fe4d",
+        storageBucket: "store-9fe4d.firebasestorage.app",
+        messagingSenderId: "838969552210",
+        appId: "1:838969552210:web:bb7faa1ca1cc83b9705e8b",
+        measurementId: "G-PEQDSMZQR2"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    // Display Product Catalog
-    function displayProducts() {
-        const productGrid = document.getElementById("productGrid");
-        productGrid.innerHTML = '';
-        products.forEach((product, index) => {
-            productGrid.innerHTML += `
-                <div class="product">
-                    <img src="${product.image}" alt="Ninja Star">
-                    <h3>${product.bladeCount} Blade, ${product.color}</h3>
-                    <button class="button" onclick="addToCart(${index})">Add to Cart</button>
-                </div>
-            `;
+    // Load Products from Firestore
+    function loadProducts() {
+        db.collection("products").get().then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+                const product = doc.data();
+                displayProduct(doc.id, product);
+            });
         });
     }
 
-    // Add Product as Admin
-    function addProduct() {
-        const bladeCount = document.getElementById("bladeCount").value;
-        const color = document.getElementById("color").value;
-        const imageUrl = document.getElementById("imageUrl").value;
-        
-        products.push({ bladeCount, color, image: imageUrl });
-        document.getElementById("adminForm").reset();
-        displayProducts();
-        alert("Ninja star added successfully!");
+    // Display Products
+    function displayProduct(id, product) {
+        const productsContainer = document.getElementById("products-container");
+        const productDiv = document.createElement("div");
+        productDiv.classList.add("product");
+        productDiv.innerHTML = `
+            <img src="${product.image}" alt="Ninja Star Image" class="product-image">
+            <h3>Blade Count: ${product.bladeCount}</h3>
+            <p>Color: ${product.color}</p>
+            <button onclick="addToCart('${id}', '${product.bladeCount}', '${product.color}')">Add to Cart</button>
+        `;
+        productsContainer.appendChild(productDiv);
     }
 
-    // Cart and Checkout Logic
-    let cart = [];
-    function addToCart(index) {
-        cart.push(products[index]);
-        alert("Added to cart!");
+    // Cart System
+    const cart = {};
+    function addToCart(id, bladeCount, color) {
+        if (!cart[id]) {
+            cart[id] = { bladeCount, color, quantity: 1 };
+        } else {
+            cart[id].quantity += 1;
+        }
+        updateCart();
     }
 
+    function updateCart() {
+        const cartItems = document.getElementById("cart-items");
+        cartItems.innerHTML = "";
+        let totalPrice = 0;
+        for (const id in cart) {
+            const item = cart[id];
+            const itemDiv = document.createElement("div");
+            itemDiv.classList.add("cart-item");
+            itemDiv.innerHTML = `
+                <p>${item.bladeCount} Blade - ${item.color} (x${item.quantity})</p>
+            `;
+            cartItems.appendChild(itemDiv);
+            totalPrice += item.quantity * 20; // Assuming each star costs $20
+        }
+        document.getElementById("total-price").innerText = totalPrice;
+    }
+
+    // Place Order and Assign to Maker with Fewest Orders
     function placeOrder() {
-        const name = document.getElementById("name").value;
-        const userClass = document.getElementById("class").value;
-        if (cart.length === 0) {
-            document.getElementById("orderStatus").textContent = "Cart is empty!";
+        const customerName = document.getElementById("customerName").value;
+        const customerClass = document.getElementById("customerClass").value;
+        if (!customerName || !customerClass) {
+            alert("Please enter your name and class.");
             return;
         }
 
-        const order = {
-            name,
-            class: userClass,
-            items: cart,
-            assignedTo: assignOrderToRandomCreator()
-        };
-        
-        cart = []; // Clear cart after order
-        document.getElementById("checkoutForm").reset();
-        document.getElementById("orderStatus").textContent = `Order placed! Assigned to: ${order.assignedTo}`;
+        // Fetch all makers and choose the one with the least orders
+        db.collection("makers").orderBy("orders", "asc").limit(1).get().then(snapshot => {
+            if (!snapshot.empty) {
+                const makerDoc = snapshot.docs[0];
+                const makerData = makerDoc.data();
+                const makerId = makerDoc.id;
+
+                // Update maker's order count
+                db.collection("makers").doc(makerId).update({
+                    orders: firebase.firestore.FieldValue.increment(1)
+                });
+
+                // Save the order in Firestore
+                db.collection("orders").add({
+                    customerName,
+                    customerClass,
+                    items: cart,
+                    makerId,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    alert("Order placed successfully!");
+                    resetCart();
+                }).catch(error => {
+                    console.error("Error placing order:", error);
+                });
+            } else {
+                alert("No makers available. Please try again later.");
+            }
+        });
     }
 
-    // Assign order to a random creator
-    function assignOrderToRandomCreator() {
-        const creators = ["Creator A", "Creator B", "Creator C"]; // Example creators
-        return creators[Math.floor(Math.random() * creators.length)];
+    function resetCart() {
+        Object.keys(cart).forEach(id => delete cart[id]);
+        updateCart();
+        document.getElementById("customerName").value = "";
+        document.getElementById("customerClass").value = "";
     }
 
-    // Section Display Logic
-    function showSection(sectionId) {
-        document.getElementById("product-catalog").style.display = 'none';
-        document.getElementById("checkout").style.display = 'none';
-        document.getElementById("admin-panel").style.display = 'none';
-        document.getElementById(sectionId).style.display = 'block';
-    }
-
-    // Initial Display of Products
-    displayProducts();
+    // Initial load
+    loadProducts();
 </script>
 
 </body>
