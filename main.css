@@ -1,56 +1,93 @@
-body {
+/* store-style.css and admin-style.css */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
     font-family: Arial, sans-serif;
-    background-color: #f7f7f7;
 }
 
-h1 {
-    color: red;
-}
-
-#products-container {
+body {
+    background-color: #f4f4f4;
+    color: #333;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
+    flex-direction: column;
+    align-items: center;
     padding: 20px;
 }
 
-.product {
-    width: 200px;
-    background-color: #fff;
-    padding: 15px;
-    margin: 15px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    text-align: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+h1 {
+    color: #b80000;
+    margin-bottom: 20px;
 }
 
-.product img {
-    width: 100%;
-    height: auto;
+#products-container, #product-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    max-width: 1200px;
+    padding: 10px;
+}
+
+.product, .product-item {
+    background-color: #fff;
     border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    width: 220px;
+    transition: transform 0.2s;
+}
+
+.product:hover, .product-item:hover {
+    transform: scale(1.05);
+}
+
+.product img, .admin-product-image {
+    width: 100%;
+    border-radius: 5px;
 }
 
 button {
-    background-color: red;
-    color: white;
+    background-color: #b80000;
+    color: #fff;
     padding: 10px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.2s;
 }
 
-#cart-container {
+button:hover {
+    background-color: #990000;
+}
+
+#cart-container, #product-form {
     background-color: #fff;
-    padding: 15px;
-    margin: 20px auto;
-    border: 2px solid #ddd;
-    width: 90%;
-    max-width: 400px;
+    padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    margin-top: 20px;
 }
 
-#cart-items {
-    margin-bottom: 15px;
+#cart-items, #product-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#total-price {
+    font-weight: bold;
+    color: #b80000;
 }
